@@ -11,7 +11,14 @@ import (
 	"golang.org/x/net/context"
 )
 
-func NewServer(cachesize int, logger *log.Logger) *Server {
+func NewServer(cache *freecache.Cache, logger *log.Logger) *Server {
+	return &Server{
+		cache:  cache,
+		logger: logger,
+	}
+}
+
+func NewServerSize(cachesize int, logger *log.Logger) *Server {
 	return &Server{
 		cache:  freecache.NewCache(0),
 		logger: logger,

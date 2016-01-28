@@ -30,6 +30,7 @@ var ErrLargeKey = []byte("-ERRLARGEKEY The key is larger than 65535\r\n")
 var ErrLargeEntry = []byte("-ERRLARGEENTRY The entry size is larger than 1/1024 of cache size\r\n")
 var ErrNotFound = []byte("-ERRNOTFOUND Entry not found\r\n")
 var ErrInvalidExpiration = []byte("-ERRINVEXP Invalid key expiration\r\n")
+var ErrUnknownCache = []byte("-ERRCACHE Unknown cache error\r\n")
 
 var OKResponse = []byte("+OK\r\n")
 var ValuePrefix = []byte("+VALUE ")
@@ -210,7 +211,7 @@ PERFORM_GET:
 		p.err = ErrNotFound
 		goto PARSE_ERR
 	} else if e != nil {
-		p.err = []byte("-ERRCACHE Unknown cache error\r\n")
+		p.err = ErrUnknownCache
 		goto PARSE_ERR
 	} else {
 		if _, err := p.writer.Write(ValuePrefix); err != nil {
@@ -234,7 +235,7 @@ PERFORM_SET:
 		p.err = ErrLargeEntry
 		goto PARSE_ERR
 	} else if e != nil {
-		p.err = []byte("-ERRCACHE Unknown cache error\r\n")
+		p.err = ErrUnknownCache
 		goto PARSE_ERR
 	} else {
 		if _, err := p.writer.Write(OKResponse); err != nil {
