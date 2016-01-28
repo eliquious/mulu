@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bufio"
 	"io"
 	"log"
 	"net"
@@ -16,8 +15,7 @@ const RingBufferMask = RingBufferCapacity - 1
 
 func NewTcpHandler(cache *freecache.Cache, conn net.Conn, logger *log.Logger, ctx context.Context) *tcpHandler {
 	ring := [RingBufferCapacity]byte{}
-
-	w := bufio.NewWriterSize(conn, 128*1024)
+	w := NewFixedSizeWriter(conn, 256*1024)
 	controller := disruptor.
 		Configure(RingBufferCapacity).
 		WithConsumerGroup(&ByteConsumer{
@@ -58,18 +56,15 @@ func (t *tcpHandler) Execute() {
 func (t *tcpHandler) createReadLoop() {
 	defer t.cancel()
 	writer := t.controller.Writer()
-	buffer := make([]byte, 64*1024)
+	buffer := make([]byte, 256*1024)
 	var sequence, reservations int64
 	var idx int
-	rd := bufio.NewReaderSize(t.conn, 1024*1024)
 	for {
 		select {
 		case <-t.context.Done():
 			return
 		default:
-			n, err := rd.Read(buffer)
-			// t.logger.Printf("n: %d; err: %s\r\n", n, err)
-			// t.logger.Printf("body: %s\r\n", string(buffer[:n]))
+			n, err := t.conn.Read(buffer)
 			if n > 0 {
 				idx = 0
 				reservations = int64(n)
