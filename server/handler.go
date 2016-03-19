@@ -15,7 +15,7 @@ const RingBufferMask = RingBufferCapacity - 1
 
 func NewTcpHandler(cache *freecache.Cache, conn net.Conn, logger *log.Logger, ctx context.Context) *tcpHandler {
 	ring := [RingBufferCapacity]byte{}
-	w := NewFixedSizeWriter(conn, 256*1024)
+	w := NewFixedSizeWriter(conn, 1024*1024)
 	controller := disruptor.
 		Configure(RingBufferCapacity).
 		WithConsumerGroup(&ByteConsumer{
@@ -56,7 +56,7 @@ func (t *tcpHandler) Execute() {
 func (t *tcpHandler) createReadLoop() {
 	defer t.cancel()
 	writer := t.controller.Writer()
-	buffer := make([]byte, 256*1024)
+	buffer := make([]byte, 1024*1024)
 	var sequence, reservations int64
 	var idx int
 	for {
