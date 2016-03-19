@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"time"
@@ -111,41 +110,41 @@ func (s *Server) listen(c context.Context) {
 	}
 }
 
-type ByteConsumer struct {
-	Writer FlushableWriter
-	Closer io.Closer
-	Parser *Parser
-	logger *log.Logger
-	cache  *freecache.Cache
-	ring   *[RingBufferCapacity]byte
-	buffer [65336]byte
-	// closed      bool
-	requestSize int
-}
-
-func (b *ByteConsumer) Consume(lower, upper int64) {
-	defer b.Writer.Flush()
-
-	var char byte
-	for sequence := lower; sequence <= upper; sequence++ {
-		if b.requestSize >= len(b.buffer) {
-			b.Writer.Write(ErrMaxSize)
-			b.logger.Printf("ERR %s\r\n", string(ErrMaxSize))
-			return
-		}
-		char = b.ring[sequence&RingBufferMask]
-
-		// end of request
-		if char == '\n' {
-			_ = b.Parser.Parse(b.buffer[:b.requestSize])
-
-			// reset request size to 0
-			b.requestSize = 0
-		} else if char == '\r' {
-			continue
-		} else {
-			b.buffer[b.requestSize] = char
-			b.requestSize++
-		}
-	}
-}
+// type ByteConsumer struct {
+// 	Writer FlushableWriter
+// 	Closer io.Closer
+// 	Parser *Parser
+// 	logger *log.Logger
+// 	cache  *freecache.Cache
+// 	ring   *[RingBufferCapacity]byte
+// 	buffer [65336]byte
+// 	// closed      bool
+// 	requestSize int
+// }
+//
+// func (b *ByteConsumer) Consume(lower, upper int64) {
+// 	defer b.Writer.Flush()
+//
+// 	var char byte
+// 	for sequence := lower; sequence <= upper; sequence++ {
+// 		if b.requestSize >= len(b.buffer) {
+// 			b.Writer.Write(ErrMaxSize)
+// 			b.logger.Printf("ERR %s\r\n", string(ErrMaxSize))
+// 			return
+// 		}
+// 		char = b.ring[sequence&RingBufferMask]
+//
+// 		// end of request
+// 		if char == '\n' {
+// 			_ = b.Parser.Parse(b.buffer[:b.requestSize])
+//
+// 			// reset request size to 0
+// 			b.requestSize = 0
+// 		} else if char == '\r' {
+// 			continue
+// 		} else {
+// 			b.buffer[b.requestSize] = char
+// 			b.requestSize++
+// 		}
+// 	}
+// }

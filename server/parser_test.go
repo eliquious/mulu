@@ -8,7 +8,8 @@ import (
 	"github.com/coocood/freecache"
 )
 
-func TestParser(t *testing.T) {
+func TestParserEmptyRequest(t *testing.T) {
+
 }
 
 func BenchmarkParserGet(b *testing.B) {

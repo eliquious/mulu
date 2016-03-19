@@ -21,6 +21,7 @@ const (
 
 // Errors
 var ErrMaxSize = []byte("-ERRMAXSIZE Request too large\r\n")
+var ErrReadError = []byte("-ERRREAD Request read error\r\n")
 var ErrUnknownCmd = []byte("-ERRPARSE Unknown command\r\n")
 var ErrIncompleteCmd = []byte("-ERRPARSE Incomplete command\r\n")
 var ErrEmptyRequest = []byte("-ERRPARSE Empty request\r\n")
@@ -52,7 +53,7 @@ func (p *Parser) Parse(line []byte) bool {
 		p.writer.Write(ErrEmptyRequest)
 		return false
 	}
-	// b.logger.Printf("Parsing line: %s\r\n", strconv.Quote(string(line)))
+	// p.logger.Printf("Parsing line: %s\r\n", strconv.Quote(string(line)))
 
 	var i, expiration int
 	var c byte
@@ -208,6 +209,7 @@ PERFORM_GET:
 		p.err = ErrLargeEntry
 		goto PARSE_ERR
 	} else if e == freecache.ErrNotFound {
+		p.logger.Printf("ErrNotFound: %s\r\n", string(p.key))
 		p.err = ErrNotFound
 		goto PARSE_ERR
 	} else if e != nil {
